@@ -1,48 +1,45 @@
 #pragma once
-#include <algorithm>
-#include <string_view>
-#include <deque>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <iostream>
-
 #include "geo.h"
 
-using namespace transport_catalogue::geo;
+#include <deque>
+#include <set>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
-namespace transport_catalogue {
+namespace transport {
 
-	struct Bus;
-	struct Stop {
+struct BusInfo {
+    std::string name;
+    std::vector<std::string> stops;
+};
 
-		std::string name_;
-		double latitude_ = 0.0;
-		double longitude_ = 0.0;
+struct StopInfo {
+    std::string name;
+    geo::Coordinates coordinates;
+};
 
-		std::vector<Bus*>buses_{};
-	};
+struct StatRoute {
+    size_t number_of_stops;
+    size_t unique_stops;
+    double route_length = 0;
+};
 
-	struct Bus {
-
-		std::string name_;
-		std::vector<Stop*>bus_;
-	};
-
-	class TransportCatalogue {
-	public:
-		Stop* GetStop(std::string_view stop);
-		Bus* GetBus(std::string_view bus);
-		std::unordered_set <const Bus*> GetUnicBus(Stop* stop);
-		void AddStop(std::string_view name, const Coordinates coordinate);
-		void AddRoute(std::string_view bus_name, std::vector<std::string_view> stops);
-		std::unordered_set<Stop*> get_uniq_stops(Bus* bus);
-
-	private:
-		std::deque<Stop> stops_;
-		std::deque<Bus> buses_;
-		std::unordered_map<std::string_view, Stop*> stopname_to_stops_;
-		std::unordered_map<std::string_view, Bus*> busname_to_bus_;
-	};
-}
+class TransportCatalogue {
+public:
+    void AddBus (const std::string& id, const std::vector<std::string>& stops);
+    void AddStop (const std::string& id, const geo::Coordinates& coordinates);
+    const BusInfo* GetBus (const std::string& id) const;
+    const StopInfo* GetStop (const std::string& id) const;
+    StatRoute GetStatBus (const std::string& id) const;
+    std::set<std::string_view> GetStatStop (const std::string& id) const; 
+private:
+    std::deque<BusInfo> buses_;
+    std::deque<StopInfo> stops_;
+    std::unordered_map<std::string_view,const BusInfo*> buses_info_;
+    std::unordered_map<std::string_view,const StopInfo*> stops_info_;
+    std::unordered_map<std::string_view, std::set<std::string_view>> buses_on_stops_;
+    };    
+}//namespace transport    

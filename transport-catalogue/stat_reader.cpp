@@ -1,84 +1,54 @@
 #include "stat_reader.h"
 
-using namespace transport_catalogue::geo;
+#include <iomanip>
+#include <string>
 
-namespace transport_catalogue {
+namespace stat {
 
-    namespace detail{
+using namespace std;
 
-        void ParseAndPrintStat(TransportCatalogue& transport_catalogue, std::string_view request,
-            std::ostream& output) {
+void ParseAndPrintStatBus(const transport::TransportCatalogue& transport_catalogue, std::string request,
+                       std::ostream& output) {    
+    output << "Bus "s << request << ": "s;
+    if (transport_catalogue.GetBus(request)) {
+        transport::StatRoute stat_route = transport_catalogue.GetStatBus(request);
+        output << stat_route.number_of_stops << " stops on route, "s
+            << stat_route.unique_stops << " unique stops, "s 
+            << std::setprecision(6) << stat_route.route_length << " route length\n"s;
+    } else {
+        output << "not found\n"s;
+    } 
+}
 
-            auto comm = request.substr(0, request.find(' '));
-            auto discr = request.substr(comm.size() + 1, request.find_last_not_of(' '));
-
-            if (comm == "Bus") {
-                Bus* bus = transport_catalogue.GetBus(discr);
-                if (bus != nullptr)
-                {
-
-                    double dist = 0.0;
-                    int iter = 0;
-                    while (iter != bus->bus_.size() - 1)
-                    {
-                        dist += ComputeDistance({ bus->bus_[iter]->latitude_, bus->bus_[iter]->longitude_ },
-                            { bus->bus_[iter + 1]->latitude_, bus->bus_[iter + 1]->longitude_ });
-                        ++iter;
-                    }
-
-                    auto size_uniq_stops = transport_catalogue.get_uniq_stops(bus).size();
-                    output << "Bus " << bus->name_ << ": "
-                        << bus->bus_.size() << " stops on route, "
-                        << size_uniq_stops << " unique stops, "
-                        << std::setprecision(6) << dist << " route length" << std::endl;
-                }
-                else {
-                    output << "Bus " << discr << ": " << "not found" << std::endl;
-                }
-            }
-            else if (comm == "Stop") {
-                std::unordered_set<const Bus*> unq_buses;
-                std::vector<std::string_view> buses_at_stop;
-                auto stop = transport_catalogue.GetStop(discr);
-
-                if (stop != NULL) {
-                    unq_buses = transport_catalogue.GetUnicBus(stop);
-
-                    if (stop->buses_.size() == 0) {
-                        output << "Stop" << " " << discr << ": " << "no buses" << std::endl;
-
-                    }
-                    else {
-
-                        for (const Bus* bus : unq_buses) {
-                            buses_at_stop.push_back(bus->name_);
-                        }
-                        std::sort(buses_at_stop.begin(), buses_at_stop.end());
-
-                        output << "Stop" << " " << discr << ": buses ";
-                        for (std::string_view bus : buses_at_stop) {
-                            output << bus << " ";
-                        }
-                        output << std::endl;
-                    }
-                }
-                else {
-                    
-                    output << "Stop" << " " << discr << ": " << "not found" << std::endl;
-                    return;
-                }
-            }
+void ParseAndPrintStatStop(const transport::TransportCatalogue& transport_catalogue, std::string request,
+                       std::ostream& output) {
+    output << "Stop "s << request << ": "s; 
+    set<string_view> buses = transport_catalogue.GetStatStop(request);
+    if(!transport_catalogue.GetStop(request)) {
+        output << "not found\n"s;
+        return;
         }
-
-        void Output(TransportCatalogue& catalogue)
-        {
-            int stat_request_count;
-            std::cin >> stat_request_count >> std::ws;
-            for (int i = 0; i < stat_request_count; ++i) {
-                std::string line;
-                getline(std::cin, line);
-                ParseAndPrintStat(catalogue, line, std::cout);
-            }
+    if(buses.empty()) {
+        output << "no buses\n"s;
+        return;
         }
-    }//end detail
-}//end transport_cat
+    output << "buses"s;
+    for (const auto& bus :buses ) {
+        output << " "s << bus;
+        }
+    output << '\n';
+}
+
+void ParseAndPrintStat(const transport::TransportCatalogue& transport_catalogue, std::string_view request,
+                       std::ostream& output) {
+    auto space_pos = request.find(' ');
+    string key(string{request.substr(0, space_pos)});
+    string value(string{request.substr(space_pos+1)});
+    if (key == "Bus") {
+        ParseAndPrintStatBus(transport_catalogue, value, output);
+    } 
+    else if(key == "Stop") {
+        ParseAndPrintStatStop(transport_catalogue, value, output);
+        }
+    }                          
+}//namespace stat    
