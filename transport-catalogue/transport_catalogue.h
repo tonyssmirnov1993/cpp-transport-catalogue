@@ -41,5 +41,5 @@ private:
     std::unordered_map<std::string_view,const BusInfo*> buses_info_;
     std::unordered_map<std::string_view,const StopInfo*> stops_info_;
     std::unordered_map<std::string_view, std::set<std::string_view>> buses_on_stops_;
-    };    
+};    
 }//namespace transport    

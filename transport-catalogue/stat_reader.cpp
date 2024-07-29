@@ -23,19 +23,19 @@ void ParseAndPrintStatBus(const transport::TransportCatalogue& transport_catalog
 void ParseAndPrintStatStop(const transport::TransportCatalogue& transport_catalogue, std::string request,
                        std::ostream& output) {
     output << "Stop "s << request << ": "s; 
-    set<string_view> buses = transport_catalogue.GetStatStop(request);
     if(!transport_catalogue.GetStop(request)) {
         output << "not found\n"s;
         return;
-        }
+    }
+    set<string_view> buses = transport_catalogue.GetStatStop(request);
     if(buses.empty()) {
         output << "no buses\n"s;
         return;
-        }
+    }
     output << "buses"s;
     for (const auto& bus :buses ) {
         output << " "s << bus;
-        }
+    }
     output << '\n';
 }
 
@@ -46,9 +46,18 @@ void ParseAndPrintStat(const transport::TransportCatalogue& transport_catalogue,
     string value(string{request.substr(space_pos+1)});
     if (key == "Bus") {
         ParseAndPrintStatBus(transport_catalogue, value, output);
-    } 
-    else if(key == "Stop") {
+    } else if(key == "Stop") {
         ParseAndPrintStatStop(transport_catalogue, value, output);
-        }
-    }                          
+    }
+}
+//добавлено
+void Output(TransportCatalogue& catalogue){
+    int stat_request_count;
+    std::cin >> stat_request_count >> std::ws;
+    for (int i = 0; i < stat_request_count; ++i) {
+        std::string line;
+        getline(std::cin, line);
+        ParseAndPrintStat(catalogue, line, std::cout);
+    }
+}                          
 }//namespace stat    

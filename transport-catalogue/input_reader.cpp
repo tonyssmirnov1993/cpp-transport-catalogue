@@ -108,7 +108,19 @@ void InputReader::ApplyCommands([[maybe_unused]] transport::TransportCatalogue& 
             std::vector<std::string_view> stops_v = reader::ParseRoute(command_description.description);
             std::vector<std::string> stops(stops_v.begin(), stops_v.end());
             catalogue.AddBus (command_description.id, stops);
-            }
         }
-    }    
+    }
+}
+//добавлено
+void InputReader::Input(TransportCatalogue& catalogue){
+    int base_request_count;
+    std::cin >> base_request_count >> std::ws;
+    for (int i = 0; i < base_request_count; ++i) {
+        std::string line;
+        getline(std::cin, line);
+        ParseLine(line);
+    }
+    ApplyCommands(catalogue);
+}
+    
 }//namespace reader
