@@ -13,8 +13,7 @@ int main() {
     //исправлено
     {
         InputReader reader;
-        reader.Input(catalogue);    //‘class reader::InputReader’ has no member named ‘Input’          
+        reader.Input(catalogue);   
     }
-    Output(catalogue);   //‘Output’ was not declared in this scope
+    Output(catalogue);
 }
-//exposed/submission/input_reader.h:26:7: note: ‘class reader::InputReader’ defined here class InputReader {
