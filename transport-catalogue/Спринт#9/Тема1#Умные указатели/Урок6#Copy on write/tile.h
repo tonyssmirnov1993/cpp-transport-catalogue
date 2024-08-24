@@ -12,29 +12,21 @@ public:
     // Конструктор по умолчанию. Заполняет тайл указанным цветом.
     Tile(char color = ' ') noexcept {
         /* Реализуйте недостающий код самостоятельно. */
-        pixels_ = std::vector<std::vector<char>>(SIZE, std::vector<char>(SIZE, color));
-        //pixels_ = std::vector<std::vector<std::vector<char>>>(SIZE, std::vector<std::vector<char>>(SIZE, std::vector<char>(SIZE, ' ')));
-        
-        // -------------- не удалять ------------
+        std::fill(&pixels_[0][0],&pixels_[0][0] + SIZE * SIZE, color);
         assert(instance_count_ >= 0);
         ++instance_count_;  // Увеличиваем счётчик тайлов (для целей тестирования).
-        // -------------- не удалять ------------
     }
  
     Tile(const Tile& other) {
         /* Реализуйте недостающий код самостоятельно. */
         pixels_ = other.pixels_;
-        // -------------- не удалять ------------
         assert(instance_count_ >= 0);
         ++instance_count_;  // Увеличиваем счётчик тайлов (для целей тестирования).
-        // -------------- не удалять ------------
     }
  
     ~Tile() {
-        // -------------- Не удалять ------------
         --instance_count_;  // Уменьшаем счётчик тайлов.
         assert(instance_count_ >= 0);
-        // -------------- не удалять ------------
     }
  
     /**
@@ -44,8 +36,8 @@ public:
     void SetPixel(Point p, char color) noexcept {
         /* Реализуйте недостающий код самостоятельно. */
  
-        if (p.y >= 0 && p.y <= SIZE && p.x >= 0 && p.x <= SIZE) {
-            pixels_[p.y][p.x] = color;
+        if ((p.x < SIZE || p.y < SIZE) && p.x >= 0 && p.y >= 0) {
+            pixels_[p.x][p.y] = color;
         }
     }
  
@@ -56,26 +48,20 @@ public:
  
     char GetPixel(Point p) const noexcept {
         /* Реализуйте недостающий функционал самостоятельно. */
-        if (p.y >= 0 && p.y <= SIZE && p.x >= 0 && p.x <= SIZE) {
-            return pixels_[p.y][p.x];
+        if (p.x >= SIZE || p.y >= SIZE || p.x < 0 || p.y < 0) { 
+            return ' '; 
         }
-        return ' ';
- 
+        return  pixels_[p.x][p.y]; 
     }
  
     // Возвращает количество экземпляра класса Tile в программе.
     static int GetInstanceCount() noexcept {
-        // -------------- не удалять ------------
         return instance_count_;
-        // -------------- не удалять ------------
     }
  
 private:
-    // -------------- не удалять ------------
     inline static int instance_count_ = 0;
-    // -------------- не удалять ------------
  
     /* Разместите здесь поля для хранения пикселей тайла. */
-    std::vector<std::vector<char>> pixels_;
- 
+    std::array<std::array<char, SIZE>, SIZE> pixels_;
 };
