@@ -1,4 +1,5 @@
 #pragma once
+#include <iomanip>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -6,35 +7,44 @@
 #include "geo.h"
 #include "transport_catalogue.h"
 
-namespace transport_catalogue {
-    namespace detail {
-        struct CommandDescription {
-            explicit operator bool() const {
-                return !command.empty();
-            }
+namespace reader {
+    
+namespace input {
 
-            bool operator!() const {
-                return !operator bool();
-            }
-
-            std::string command;      
-            std::string id;           
-            std::string description;  
-        };
-
-        class InputReader {
-        public:                    
-            void ParseLine(std::string_view line);   
-            void ApplyCommands(TransportCatalogue& catalogue) const;
-            void InputFromFile(TransportCatalogue& catalogue);
-            void Input(TransportCatalogue& catalogue);
-            void ParseDistance(TransportCatalogue& catalogue) const;
-            std::string TrimComma(std::string stop_name)const;
-            std::string TrimCoord(std::string line)const;
-            std::string TrimDist(std::string line)const;
-
-        private:
-            std::vector<CommandDescription> commands_;
-        };
+struct CommandDescription {
+    // Определяет, задана ли команда (поле command непустое)
+    explicit operator bool() const {
+        return !command.empty();
     }
-}
+
+    bool operator!() const {
+        return !operator bool();
+    }
+
+    std::string command;      // Название команды
+    std::string id;           // id маршрута или остановки
+    std::string description;  // Параметры команды
+};
+
+class InputReader {
+public:
+    /**
+     * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
+     */
+    void ParseLine(std::string_view line);
+
+    /**
+     * Наполняет данными транспортный справочник, используя команды из commands_
+     */
+    void ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const;
+    void AddDistances(transport_catalogue::TransportCatalogue& catalogue) const;
+
+private:
+    std::vector<CommandDescription> commands_;
+};
+    
+void Read(transport_catalogue::TransportCatalogue& catalogue, std::istream& input);
+    
+} //namespace input
+    
+} //namespace reader

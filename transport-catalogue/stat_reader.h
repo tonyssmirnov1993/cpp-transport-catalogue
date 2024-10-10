@@ -1,18 +1,28 @@
 #pragma once
 
 #include <iosfwd>
-#include <iomanip>
 #include <string_view>
-#include <fstream>
-#include <cassert>
 
 #include "transport_catalogue.h"
 
-namespace transport_catalogue {
-    namespace detail {
-        void ParseAndPrintStat(TransportCatalogue& tansport_catalogue, std::string_view request,
-            std::ostream& output);
-        void Output(TransportCatalogue& catalogue);
-        void OutputFromFile(TransportCatalogue& catalogue);
-    }
-}
+namespace reader {
+    
+namespace stat {
+
+std::string_view Trim(std::string_view string);
+    
+void PrintBusInfo(const transport_catalogue::TransportCatalogue& catalogue, 
+                  const std::string& id, std::ostream& output);
+    
+void PrintStopInfo(const transport_catalogue::TransportCatalogue& catalogue, 
+                  const std::string& id, std::ostream& output);
+    
+void ParseAndPrintStat(const transport_catalogue::TransportCatalogue& catalogue, 
+                       std::string_view request, std::ostream& output);
+
+void Read(const transport_catalogue::TransportCatalogue& catalogue, 
+          std::istream& input, std::ostream& output);
+    
+} //namespace stat
+    
+} //namespace reader
