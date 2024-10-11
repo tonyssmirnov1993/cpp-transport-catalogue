@@ -47,7 +47,7 @@ namespace transport_catalogue {
         const Stop* FindStop(const std::string& id) const;
         unsigned int GetDistance(const Stop* start_stop, const Stop* reach_stop) const;
         BusInfo GetBusInfo(const Bus* bus) const;
-        std::set<std::string> GetStopInfo(const Stop* stop) const;
+        const std::set<std::string>* GetStopInfo(const Stop* stop) const;
 
     private:
         std::deque<Bus> buses_;
