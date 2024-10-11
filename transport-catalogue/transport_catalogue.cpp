@@ -68,7 +68,7 @@ namespace transport_catalogue {
 
         unsigned int route_length = 0;
         double geo_length = 0.0;
-        for (size_t i = 0; i < bus->stops.size() - 1; i++) {
+        for (size_t i = 0; i < bus->stops.size() - 1; ++i) {
 
             auto first_stop = stopname_to_stops_.find(bus->stops[i]);
             auto second_stop = stopname_to_stops_.find(bus->stops[i + 1]);
@@ -84,12 +84,10 @@ namespace transport_catalogue {
         return info;
     }
 
-    //new
-    const std::set<std::string>* TransportCatalogue::GetStopInfo(const Stop* stop) const
-    {
-        if (!buses_for_stop_.count(stop->id) || buses_for_stop_.at(stop->id).empty()) {
-            return nullptr;
+    const std::set<std::string> *TransportCatalogue::GetStopInfo(const Stop* stop) const {
+        if (buses_for_stop_.count(stop->id)) {
+            return &(buses_for_stop_.at(stop->id));
         }
-        return &(buses_for_stop_.at(stop->id));
+        return {};
     }
 } //transport_catalogue
