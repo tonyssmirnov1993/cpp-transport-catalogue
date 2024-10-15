@@ -2,33 +2,37 @@
 #include "json.h"
 #include "transport_catalogue.h"
 #include "map_renderer.h"
- 
-namespace transport_catalogue {
-namespace detail {
-namespace json {
-    
-class JSONReader{
-public:
-    JSONReader() = default;    
-    JSONReader(Document doc);
-    JSONReader(std::istream& input);
-    
-    void parse_node_base(const Node& root, TransportCatalogue& catalogue);
-    void parse_node_stat(const Node& root, std::vector<StatRequest>& stat_request);
-    void parse_node_render(const Node& node, map_renderer::RenderSettings& render_settings);
-    void parse_node(const Node& root, TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::RenderSettings& render_settings);
-    void parse(TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::RenderSettings& render_settings);
-    
-    Stop parse_node_stop(Node& node);
-    Bus parse_node_bus(Node& node, TransportCatalogue& catalogue);
-    std::vector<Distance> parse_node_distances(Node& node, TransportCatalogue& catalogue);
-    
-    const Document& get_document() const;
-    
-private:
-    Document document_;
+
+using namespace transport_catalogue;
+
+struct StatRequest {
+    int id;
+    std::string type;
+    std::string name;
 };
+
+
+class JsonReader {
+public:
+    json::Document ExecuteQuries(TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
+
+    void LoadJson(json::Document& document, TransportCatalogue& tq, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
+    void ParseNode(const json::Node& root, TransportCatalogue& tq, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
+    void ParseNodeStat(const json::Node& node, std::vector<StatRequest>& stat_request);    
+    void ParseBaseRequests(const json::Node& document, TransportCatalogue& tq) ;
+    //====================Renderer======================
+    void ParseRenderRequests(const json::Node& document, /*TransportCatalogue& tq,*/ map_renderer::Renderer& render);
+    void ParseUnderColor(const json::Node& node,/*map_renderer::Renderer& rend*/map_renderer::RenderSettings& settings);
+    void ParseColorPalit(const json::Node& node,/* map_renderer::Renderer& rend*/map_renderer::RenderSettings& settings);
+    void ParseBus(const json::Node& node, TransportCatalogue& tq);
+    void ParseStop(const json::Node& node, TransportCatalogue& tq);
+    void ParseDistance(TransportCatalogue& tq);
+   
+private:
     
-}//end namespace json
-}//end namespace detail
-}//end namespace transport_catalogue
+   json::Dictionary stops_distances_;
+
+public:
+    
+    JsonReader() = default;
+};

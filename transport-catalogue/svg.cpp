@@ -1,229 +1,210 @@
 #include "svg.h"
- 
+
 namespace svg {
- 
-using namespace std::literals; 
- 
-Rgb::Rgb(uint8_t red, uint8_t green, uint8_t blue) : red_(red)
-                                                   , green_(green)
-                                                   , blue_(blue) {}  
-    
-Rgba::Rgba(uint8_t red, uint8_t green, uint8_t blue, double opacity) : red_(red)
-                                                                     , green_(green)
-                                                                     , blue_(blue)
-                                                                     , opacity_(opacity) {}
-    
-inline void print_color(std::ostream& out, Rgb& rgb) {
-    out << "rgb("sv << static_cast<short>(rgb.red_) << ","sv
-                    << static_cast<short>(rgb.green_) << ","sv 
-                    << static_cast<short>(rgb.blue_) << ")"sv;
+
+using namespace std::literals;
+
+void Object::Render(const RenderContext& context) const {
+    context.RenderIndent();
+
+    // Делегируем вывод тега своим подклассам
+    RenderObject(context);
+
+    context.output << std::endl;
 }
-    
-inline void print_color(std::ostream& out, Rgba& rgba) {
-    out << "rgba("sv << static_cast<short>(rgba.red_) << ","sv 
-                     << static_cast<short>(rgba.green_) << ","sv 
-                     << static_cast<short>(rgba.blue_) << ","sv 
-                     << (rgba.opacity_) << ")"sv;
-}
-    
-inline void print_color(std::ostream& out, std::monostate) {
-    out << "none"sv;
-}
- 
-inline void print_color(std::ostream& out, std::string& color) {
-    out << color;
-}
-    
-std::ostream& operator<<(std::ostream& out, const Color& color) {
-    std::visit([&out](auto value) {
-            print_color(out, value);
-    }, color);
-    
-    return out;
-} 
-    
-RenderContext::RenderContext(std::ostream& out) : out_(out) {}
-    
-RenderContext RenderContext::indented() const {
-        return {out_, 
-                indent_step_, 
-                indent_ + indent_step_};
-}
-    
-void RenderContext::render_indent() const {
-        for (int i = 0; i < indent_; ++i) {
-            out_.put(' ');
-        }
-}
- 
-void Object::render(const RenderContext& context) const {
-    context.render_indent();
-    render_object(context);
-    context.out_ << std::endl;
-}
- 
-Circle& Circle::set_center(Point center)  {
+
+// =============== Circle ========================
+
+Circle& Circle::SetCenter(Point center)  {
     center_ = center;
     return *this;
 }
- 
-Circle& Circle::set_radius(double radius)  {
+
+Circle& Circle::SetRadius(double radius)  {
     radius_ = radius;
     return *this;
 }
- 
-void Circle::render_object(const RenderContext& context) const {
-    std::ostream& out = context.out_;
- 
-    out << "<circle cx=\""sv << center_.x 
-        << "\" cy=\""sv << center_.y << "\" "sv;
-    out << "r=\""sv << radius_ << "\" "sv;
-    
-    render_attrs(context.out_);
-    out << "/>"sv;
+
+void Circle::RenderObject(const RenderContext& context) const {
+    auto& output = context.output;
+    output << R"(<circle cx=")"sv << center_.x
+        << R"(" cy=")"sv << center_.y << R"(" )";
+    output << R"(r=")"sv << radius_ << R"(" )";
+    RenderAttrs(context.output);
+    output << "/>"sv;
 }
-    
-Polyline& Polyline::add_point(Point point) {
-    points_.emplace_back(point);
-    return *this;
+
+Polyline& Polyline::AddPoint(Point point)
+{
+    vec_pol_.push_back(point);
+    return *this;   
 }
- 
-void Polyline::render_object(const RenderContext& context) const {
-    
-    std::ostream& out = context.out_;
-    out << "<polyline points=\"";
-    
-    for (size_t i = 0; i < points_.size(); ++i) {
-        out << points_[i].x << ","sv << points_[i].y;
- 
-        if (i+1 != points_.size()) {
-            out << " "sv;
+
+//============== Polyline =========================
+void Polyline::RenderObject(const RenderContext& context) const
+{
+    auto& output = context.output;
+    output << R"(<polyline points=")";
+    for (size_t i = 0; i < vec_pol_.size(); i++)
+    {
+        output << vec_pol_[i].x << ","sv << vec_pol_[i].y;
+        if (i + 1 != vec_pol_.size()) {
+            output << " "sv;
         }
     }
-    out << "\" "; 
-    render_attrs(context.out_);
-    out << "/>";
+    output << R"(" )";
+    RenderAttrs(context.output);
+    /*out << R"(")" << " />"sv;*/
+    output << "/>";
 }
-    
-Text& Text::set_position(Point pos) {
-    position_ = pos;
-    return *this;
+//=================== Text ==========================
+Text& Text::SetPosition(Point position)
+{
+    position_ = position;
+    return *this;   
 }
- 
-Text& Text::set_offset(Point offset) {
+
+Text& Text::SetOffset(Point offset)
+{
     offset_ = offset;
     return *this;
 }
-    
-Text& Text::set_font_size(uint32_t size) {
+
+Text& Text::SetFontSize(uint32_t size)
+{
     font_size_ = size;
     return *this;
 }
- 
-Text& Text::set_font_family(std::string font_family) {
-    font_family_ = std::move(font_family);
+
+Text& Text::SetFontFamily(std::string font_family)
+{
+    font_family_ = font_family;
     return *this;
 }
- 
-Text& Text::set_font_weight(std::string font_weight) {
-    font_weight_ = std::move(font_weight);
+
+Text& Text::SetFontWeight(std::string font_weight)
+{
+    font_weight_ = font_weight;
     return *this;
 }
- 
-Text& Text::set_data(std::string data) {
-    data_ = std::move(data);
+
+Text& Text::SetData(std::string data)
+{
+    data_ = data;
     return *this;
 }
- 
-std::string Text::delete_spaces(const std::string& str) {
-    if (str.empty()) {
-        return {};
-    } else {
-        
-        auto left = str.find_first_not_of(' ');
-        auto right = str.find_last_not_of(' ');
-        return str.substr(left, right - left + 1);  
+
+std::string Text::DeleteSpaces(const std::string& data)
+{
+    if (data.empty()) {
+        return{};
     }
+
+    auto left = data.find_first_not_of(' ');
+    auto right = data.find_last_not_of(' ');
+
+    return data.substr(left, right - left + 1);  
 }
- 
-std::string Text::uniq_symbols(const std::string& str) {
-    
-    std::string out;
- 
-    for (char ch : str) {
-        
+
+std::string Text::UniqSymbols(const std::string data)
+{
+    std::string output;
+    for (auto ch : data) {
         if (ch == '"') {
-            out += "&quot;"sv;
+            output += "&quot;"sv;
             continue;
-            
-        } else if (ch == '`' || ch == '\'') {
-            out += "&apos;"sv;
-            continue;
-            
-        } else if (ch == '<') {
-            out += "&lt;"sv;
-            continue;
-            
-        } else if (ch == '>') {
-            out += "&gt;"sv;
-            continue;
-            
-        } else if (ch == '&') {
-            out += "&amp;"sv;
-            continue;
-            
-        } else {
-            
         }
-        
-        out += ch;
+        else if (ch == '`' || ch == '\'') {
+            output += "&apos;";
+            continue;
+        }
+        else if (ch == '<') {
+            output += "&lt;";
+            continue;
+        }
+        else if (ch == '>') {
+            output += "&gt:";
+            continue;
+        }
+        else if (ch == '&') {
+            output += "&amp;";
+            continue;
+        }else{}
+        output += ch;
     }
- 
-    return out;
+    return output;
 }
- 
-void Text::render_object(const RenderContext& context) const {
-    
-    std::ostream& out = context.out_;
-    out << "<text "; 
-    render_attrs(context.out_);
-    out << "x=\"" 
-        << position_.x << "\" y=\"" 
-        << position_.y << "\" "
-        << "dx=\"" 
-        << offset_.x << "\" dy=\"" 
-        << offset_.y << "\" "
-        << "font-size=\"" 
-        << font_size_ << "\" ";
- 
+
+void Text::RenderObject(const RenderContext& context) const
+{
+    auto& output = context.output;
+    output << "<text ";
+    RenderAttrs(context.output);
+    output << " x=\""
+
+        << position_.x <<"\" y=\""
+        << position_.y<<"\" dx=\""
+        << offset_.x<<"\" dy=\""
+        << offset_.y<<"\" font-size=\""
+        << font_size_ << "\"";
+
     if (!font_family_.empty()) {
-        out << "font-family=\"" << font_family_ << "\" ";
+        output << " font-family=\"" << font_family_<<"\"";
     }
- 
     if (!font_weight_.empty()) {
-        out << "font-weight=\"" << font_weight_ << "\"";
+        output <<" font-weight=\""<< font_weight_<<"\"";
     }
- 
-    out << ">"sv << delete_spaces(uniq_symbols(data_)) << "</text>"sv;
- 
+    output << ">"sv<< DeleteSpaces( UniqSymbols(data_))<<"</text>";
 }
- 
-void Document::render(std::ostream& out) const{
-    int indent = 2;
+
+void Document::AddPtr(std::unique_ptr<Object>&& obj)
+{
+    objects_.emplace_back(std::move(obj));
+}
+
+void Document::Render(std::ostream& output) const
+{
     int indent_step = 2;
- 
-    RenderContext context(out, indent_step, indent);
- 
-    const std::string_view xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv;
-    const std::string_view svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv;
- 
-    out << xml << "\n"sv << svg << "\n"sv;
- 
-    for (const auto& object : objects_) {
-        object->render(context);
+    int indent = 2;
+    std::string_view xml = R"(<?xml version="1.0" encoding="UTF-8" ?>)";
+    std::string_view svg = R"(<svg xmlns="http://www.w3.org/2000/svg" version="1.1">)";
+    RenderContext context(output, indent_step, indent);
+    output << xml << "\n"sv << svg << "\n"s;
+    for (auto &obj : objects_) {
+        obj.get()->Render(context);
     }
-    
-    out << "</svg>"sv;
+    output << "</svg>"sv;
 }
- 
-}//end namespace svg
+
+void PrintColor(std::ostream& output, RGB& rgb)
+{
+    output << "rgb("sv << static_cast<short>(rgb.red) << ","sv
+        << static_cast<short>(rgb.green) << ","sv
+        << static_cast<short>(rgb.blue) << ")"sv;    
+}
+
+void PrintColor(std::ostream& output, RGBA& rgba)
+{
+    output << "rgba("sv << static_cast<short>(rgba.red) << ","sv
+        << static_cast<short>(rgba.green) << ","sv
+        << static_cast<short>(rgba.blue) << ","sv
+        << (rgba.opacity) << ")"sv;   
+}
+
+void PrintColor(std::ostream& output, std::monostate)
+{
+    output << "none"sv;
+}
+
+void PrintColor(std::ostream& output, std::string& color)
+{ 
+    output << color;
+}
+
+std::ostream& operator<<(std::ostream& output, const Color& color)
+{
+    std::visit([&output](auto value) {PrintColor(output, value); }, color);
+    return output;
+}
+
+}// namespace svg
