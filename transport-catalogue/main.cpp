@@ -21,7 +21,7 @@ int main() {
             json::Document document_input;
             json::Document document_output;
 
-            std::ofstream output_test("output.svg");
+            std::ofstream result_calc("output.json");
 
             document_input = json::Load(input);
 
@@ -29,7 +29,7 @@ int main() {
 
             document_output = reader.ExecuteQuries(catalogue, stat_request, renderer);
 
-            json::Print(document_output, std::cout);
+            json::Print(document_output, result_calc);
         }
     }
 }
