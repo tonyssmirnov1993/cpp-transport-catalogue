@@ -48,42 +48,45 @@ void JsonReader::ParseNodeStat(const json::Node& node, std::vector<StatRequest>&
     }
 }
 
-json::Document JsonReader::ExecuteQuries(TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render)
-{
+json::Document JsonReader::ExecuteQueries(TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render)
+{   //============добавлено 3 функции (разбиение метода)
     std::vector<json::Node> result_queries;
 
     for (StatRequest req : stat_request) {
         if (req.type == "Stop") {
-
-            json::Dictionary result;
-            json::Array buses;
-            std::vector<std::string> str_buses;
-            std::string str_not_f = "not found";
-
-            if (catalogue.GetStop(req.name) == nullptr) {
-                result.emplace("request_id", json::Node{ req.id });
-                result.emplace("error_message", json::Node{ str_not_f });
-                result_queries.push_back(result);
-            }
-            else {
-                Stop* stop = catalogue.GetStop(req.name);
-                result.emplace("request_id", json::Node{ req.id });
-                
-                for (auto& bus : catalogue.GetUniqueBuses(stop)) {
-                    str_buses.push_back(bus->name_);
-                   
-                }
-                std::sort(str_buses.begin(), str_buses.end());
-                for (std::string& bus_s : str_buses) {
-                    Bus* bus = catalogue.GetBus(bus_s);
-                    buses.push_back(bus->name_);//
-                }
-                result.emplace("buses", json::Node{ buses });
-                result_queries.emplace_back(result);
-            }
+            //=========старый вариант=============
+            //json::Dictionary result;
+            //json::Array buses;
+            //std::vector<std::string> str_buses;
+            //std::string str_not_f = "not found";
+            //
+            //if (catalogue.GetStop(req.name) == nullptr) {
+            //    result.emplace("request_id", json::Node{ req.id });
+            //    result.emplace("error_message", json::Node{ str_not_f });
+            //    result_queries.push_back(result);
+            //}
+            //else {
+            //    Stop* stop = catalogue.GetStop(req.name);
+            //    result.emplace("request_id", json::Node{ req.id });
+            //    
+            //    for (auto& bus : catalogue.GetUniqueBuses(stop)) {
+            //        str_buses.push_back(bus->name_);
+            //       
+            //    }
+            //    std::sort(str_buses.begin(), str_buses.end());
+            //    for (std::string& bus_s : str_buses) {
+            //        Bus* bus = catalogue.GetBus(bus_s);
+            //        buses.push_back(bus->name_);//
+            //    }
+            //    result.emplace("buses", json::Node{ buses });
+            //    result_queries.emplace_back(result);
+            //}
+            //============новый=============
+            result_queries.push_back(UpdExecuteStop(req,catalogue));
         }
         else if (req.type == "Bus") {
-            json::Dictionary result;
+            //===============старый вариант===============
+           /* json::Dictionary result;
             std::string str_not_f = "not found";
             Bus* bus =catalogue.GetBus(req.name);
             
@@ -100,10 +103,13 @@ json::Document JsonReader::ExecuteQuries(TransportCatalogue& catalogue, std::vec
                 result.emplace("stop_count", json::Node{ int(bus->bus_.size()) });
                 result.emplace("unique_stop_count", json::Node{ int(catalogue.GetUniqueStops(bus).size()) });
                 result_queries.emplace_back(result);
-            }            
+            } */   
+            //==================новый=============
+            result_queries.emplace_back(UpdExecuteBuses(req, catalogue));
         }
         if (req.type == "Map") {
-            json::Dictionary result;
+            //=============старый вариант=============
+            /*json::Dictionary result;
             std::ostringstream map_stream;
             std::string line;
 
@@ -113,11 +119,85 @@ json::Document JsonReader::ExecuteQuries(TransportCatalogue& catalogue, std::vec
            
             result.emplace("map", json::Node{ line });           
             result.emplace("request_id", json::Node{ req.id });
-            result_queries.emplace_back(result);
+            result_queries.emplace_back(result);*/
+            //============новый==================
+            result_queries.emplace_back(UpdExecuteMap(req, catalogue, render));
         }       
     }
     return json::Document(json::Node{result_queries});
 }
+
+json::Dictionary JsonReader::UpdExecuteStop(StatRequest& req, TransportCatalogue& catalogue)
+{
+    json::Dictionary result;
+    json::Array buses;
+    std::vector<std::string> str_buses;
+    std::string str_not_f = "not found";
+
+    if (catalogue.GetStop(req.name) == nullptr) {
+        result.emplace("request_id", json::Node{ req.id });
+        result.emplace("error_message", json::Node{ str_not_f });
+       
+        return result;
+    }
+    else {
+        Stop* stop = catalogue.GetStop(req.name);
+        result.emplace("request_id", json::Node{ req.id });
+
+        for (auto& bus : catalogue.GetUniqueBuses(stop)) {
+            str_buses.push_back(bus->name_);
+
+        }
+        std::sort(str_buses.begin(), str_buses.end());
+        for (std::string& bus_s : str_buses) {
+            Bus* bus = catalogue.GetBus(bus_s);
+            buses.push_back(bus->name_);//
+        }
+        result.emplace("buses", json::Node{ buses });
+        return result;
+      
+    }
+
+   
+}
+
+json::Dictionary JsonReader::UpdExecuteBuses(StatRequest& req, TransportCatalogue& catalogue)
+{
+    json::Dictionary result;
+    std::string str_not_f = "not found";
+    Bus* bus = catalogue.GetBus(req.name);
+   auto stat_bus =  catalogue.GetRouteStatistic(bus);
+    if (catalogue.GetBus(req.name) == nullptr) {
+        result.emplace("request_id", json::Node{ req.id });
+        result.emplace("error_message", json::Node{ str_not_f });
+        return result;
+    }
+    else {
+        auto curv = double(stat_bus.stat_distance_ / stat_bus.stat_lenght_);
+        result.emplace("request_id", json::Node{ req.id });
+        result.emplace("curvature", json::Node{ curv });
+        result.emplace("route_length", json::Node{ stat_bus.stat_distance_ });
+        result.emplace("stop_count", json::Node{ int(bus->bus_.size()) });
+        result.emplace("unique_stop_count", json::Node{ int(catalogue.GetUniqueStops(bus).size()) });
+        return result;
+    }
+}
+
+json::Dictionary JsonReader::UpdExecuteMap(StatRequest& req, TransportCatalogue& catalogue, map_renderer::Renderer& render)
+{
+    json::Dictionary result;
+    std::ostringstream map_stream;
+    std::string line;
+
+    render.PrintMapOut(catalogue, map_stream);
+
+    line = map_stream.str();
+
+    result.emplace("map", json::Node{ line });
+    result.emplace("request_id", json::Node{ req.id });
+    return result;
+}
+
 
 void JsonReader::ParseBaseRequests(const json::Node& node, TransportCatalogue& tq)
 {
@@ -168,7 +248,7 @@ void JsonReader::ParseRenderRequests(const json::Node& node,/* TransportCatalogu
         set.stop_label_offset.y = rend_req.at("stop_label_offset").AsArray()[1].AsDouble();
 
         ParseUnderColor(node, set);
-        ParseColorPalit(node, set);
+        ParseColorPalette(node, set);
 
         render.AddSettings(set);        
     }
@@ -201,7 +281,7 @@ void JsonReader::ParseUnderColor(const json::Node& node, map_renderer::RenderSet
 
 }
 
-void JsonReader::ParseColorPalit(const json::Node& node, map_renderer::RenderSettings& settings)
+void JsonReader::ParseColorPalette(const json::Node& node, map_renderer::RenderSettings& settings)
 {
     json::Dictionary rend_req = node.AsMap();
   

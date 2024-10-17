@@ -20,16 +20,16 @@ int main() {
 
             json::Document document_input;
             json::Document document_output;
-
-            std::ofstream result_calc("output.json");
+           
+            std::ofstream out_test("output.json");
 
             document_input = json::Load(input);
 
             reader.LoadJson(document_input, catalogue, stat_request, renderer);
 
-            document_output = reader.ExecuteQuries(catalogue, stat_request, renderer);
+            document_output = reader.ExecuteQueries(catalogue, stat_request, renderer);
 
-            json::Print(document_output, result_calc);
+            json::Print(document_output, out_test);
         }
     }
 }

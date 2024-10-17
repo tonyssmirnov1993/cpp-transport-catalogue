@@ -1,11 +1,25 @@
 #include "map_renderer.h"
 #include "transport_catalogue.h"
 namespace map_renderer {
+    //===========новый================
+    std::vector<std::string> Renderer::GetSortedBuses(transport_catalogue::TransportCatalogue& tq)
+    {
+        std::vector<std::string> bus_names;
+      
+        for (auto& bus : tq.GetBuses()) {
+            auto& name = bus.second->name_;
+            bus_names.push_back(name);
+        }       
+
+        std::sort(bus_names.begin(), bus_names.end());
+
+        return bus_names;
+    }
 
     void  Renderer::AddBussesLine(transport_catalogue::TransportCatalogue& tq, svg::Document& document)
     {
-       
-        std::vector<std::string> bus_names;
+       //============старый вариант=============
+        /*std::vector<std::string> bus_names;
         RenderSettings& settings = this->settings_;
                
         size_t color_position = 0;
@@ -18,10 +32,15 @@ namespace map_renderer {
         SphereProjector projector(geo_coordinates_.begin(),
             geo_coordinates_.end(), settings.width, settings.height, settings.padding);
 
-        std::sort(bus_names.begin(), bus_names.end());
+        std::sort(bus_names.begin(), bus_names.end());*/
+        //
+        RenderSettings& settings = this->settings_;
+        SphereProjector projector(geo_coordinates_.begin(),
+            geo_coordinates_.end(), settings.width, settings.height, settings.padding);
+        size_t color_position = 0;
 
-        for (auto& bus : bus_names) {
-
+        for (auto& bus : GetSortedBuses(tq)) {
+            //
             svg::Polyline bus_line;
             Bus* current_bus = tq.GetBus(bus);
             
@@ -53,28 +72,79 @@ namespace map_renderer {
 
             document.Add(bus_line);
         }
+        //
+    }
+    //=================новый==============
+    void Renderer::UpDocumentTitle(svg::Document& document, Bus* current_bus, std::vector<geo::Coordinates>& stops_geo_coordinates, size_t color_position)
+    {
+        RenderSettings& settings = this->settings_;
+        SphereProjector projector(geo_coordinates_.begin(),
+            geo_coordinates_.end(), settings.width, settings.height, settings.padding);
+
+        auto& stops = current_bus->bus_;
+        auto stops_count = stops.size();
+
+
+        if (stops_count == 0) {
+            return;
+        }
+
+        svg::Text base_bus_title;
+        svg::Text text_bus_title;
+        SetStandBusBaseTextSettings(settings, base_bus_title);
+        SetStandBusTextSettings(settings, text_bus_title);
+
+
+        if (current_bus->is_round_trip_) {
+            svg::Point first_end_stop_screen_coordinates = projector(stops[0]->coordinates_);
+            base_bus_title.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_);
+            text_bus_title.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_).SetFillColor(settings.colors[color_position]);
+            document.Add(base_bus_title);
+            document.Add(text_bus_title);
+        }
+        else {
+            svg::Point first_end_stop_screen_coordinates = projector(stops[0]->coordinates_);
+
+            base_bus_title.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_);
+            text_bus_title.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_).SetFillColor(settings.colors[color_position]);
+
+            document.Add(base_bus_title);
+            document.Add(text_bus_title);
+
+            if (stops[0] != stops[stops_geo_coordinates.size() / 2]) {
+
+                svg::Point end_stop_screen_coordinates = projector(stops[stops_geo_coordinates.size() / 2]->coordinates_);
+                svg::Text base_bus_title_beg;
+                svg::Text text_bus_title_beg;
+
+                SetStandBusBaseTextSettings(settings, base_bus_title_beg);
+                SetStandBusTextSettings(settings, text_bus_title_beg);
+
+                base_bus_title_beg.SetPosition(end_stop_screen_coordinates).SetData(current_bus->name_);
+                text_bus_title_beg.SetPosition(end_stop_screen_coordinates).SetData(current_bus->name_).SetFillColor(settings.colors[color_position]);
+
+                document.Add(base_bus_title_beg);
+                document.Add(text_bus_title_beg);
+            }
+        }
     }
 
     void Renderer::AddBusTitle(transport_catalogue::TransportCatalogue& tq, svg::Document& document)
     {
-
-        std::vector<std::string> bus_names;
-        RenderSettings& settings = this->settings_;
-       
-        size_t color_position = 0;
-       
-        for (auto& bus : tq.GetBuses()) {
+       // std::vector<std::string> bus_names;
+        RenderSettings& settings = this->settings_;      
+        size_t color_position = 0;       
+        //==============старый варинт=================
+       /* for (auto& bus : tq.GetBuses()) {
             auto& name = bus.second->name_;
             bus_names.push_back(name);
-        }
+        }*/
+        //SphereProjector projector(geo_coordinates_.begin(),
+           // geo_coordinates_.end(), settings.width, settings.height, settings.padding);
+       // std::sort(bus_names.begin(), bus_names.end());
 
-        SphereProjector projector(geo_coordinates_.begin(),
-            geo_coordinates_.end(), settings.width, settings.height, settings.padding);
-
-        std::sort(bus_names.begin(), bus_names.end());
-
-        for (auto& bus : bus_names) {
-            std::vector<geo::Coordinates> stops_geo_coords;
+        for (auto& bus : GetSortedBuses(tq)) {
+            std::vector<geo::Coordinates> stops_geo_coordinates;
             Bus* current_bus = tq.GetBus(bus);
 
 
@@ -82,7 +152,7 @@ namespace map_renderer {
                 geo::Coordinates coordinates;
                 coordinates.lat = stop->coordinates_.lat;
                 coordinates.lng = stop->coordinates_.lng;
-                stops_geo_coords.push_back(coordinates);             
+                stops_geo_coordinates.push_back(coordinates);             
             }
 
             if (current_bus == nullptr) {
@@ -92,12 +162,12 @@ namespace map_renderer {
             auto& stops = current_bus->bus_;
             auto stops_count = stops.size();
 
-
             if (stops_count == 0) {
                 continue;
             }
-
-            svg::Text base_bus_title;
+            UpDocumentTitle(document, current_bus, stops_geo_coordinates, color_position);
+            //===============старый====================
+           /* svg::Text base_bus_title;
             svg::Text text_bus_title;
             SetStandBusBaseTextSettings(settings,base_bus_title);
             SetStandBusTextSettings(settings, text_bus_title);
@@ -119,23 +189,23 @@ namespace map_renderer {
                 document.Add(base_bus_title);
                 document.Add(text_bus_title);
 
-                if (stops[0] != stops[stops_geo_coords.size()/2]) {
+                if (stops[0] != stops[stops_geo_coordinates.size()/2]) {
 
-                    svg::Point end_stop_screen_coord = projector(stops[stops_geo_coords.size() / 2]->coordinates_);
+                    svg::Point first_end_stop_screen_coordinates = projector(stops[stops_geo_coordinates.size() / 2]->coordinates_);
                     svg::Text base_bus_title_beg;
                     svg::Text text_bus_title_beg;
 
                     SetStandBusBaseTextSettings(settings, base_bus_title_beg);
                     SetStandBusTextSettings(settings, text_bus_title_beg);
 
-                    base_bus_title_beg.SetPosition(end_stop_screen_coord).SetData(current_bus->name_);
-                    text_bus_title_beg.SetPosition(end_stop_screen_coord).SetData(current_bus->name_).SetFillColor(settings.colors[color_position]);
+                    base_bus_title_beg.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_);
+                    text_bus_title_beg.SetPosition(first_end_stop_screen_coordinates).SetData(current_bus->name_).SetFillColor(settings.colors[color_position]);
 
                     document.Add(base_bus_title_beg);
                     document.Add(text_bus_title_beg);
                 }
-            }
-                       
+            }*/
+                 //      
             if (color_position == settings.colors.size() - 1) {
                 color_position = 0;
             }

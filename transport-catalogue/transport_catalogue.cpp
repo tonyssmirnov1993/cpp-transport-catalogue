@@ -3,8 +3,9 @@
 using namespace transport_catalogue::geo;
 
 namespace transport_catalogue {
-	double TransportCatalogue::GetLength(Bus* bus)
+	const double TransportCatalogue::GetLength(Bus* bus) const
 	{
+		
 		return transform_reduce(next(bus->bus_.begin()),
 			bus->bus_.end(),
 			bus->bus_.begin(),
@@ -17,7 +18,7 @@ namespace transport_catalogue {
 			});
 	}
 
-	int TransportCatalogue::GetBusDistance(Bus* bus)
+	const int TransportCatalogue::GetBusDistance(Bus* bus) const
 	{
 		int result = 0;
 		Stop* st1;
@@ -48,6 +49,15 @@ namespace transport_catalogue {
 		return result;
 	}
 
+	Statistic TransportCatalogue::GetRouteStatistic(Bus* bus)
+	{
+		
+		Statistic stat;
+		stat.stat_distance_ = GetBusDistance(bus);
+		stat.stat_lenght_ = GetLength(bus);
+		return stat;
+	}
+
 	Stop* TransportCatalogue::GetStop(std::string_view stop)
 	{
 		if (stopname_to_stops_.empty()) {
@@ -75,9 +85,19 @@ namespace transport_catalogue {
 
 	std::unordered_set <const Bus*>TransportCatalogue::GetUniqueBuses(Stop* stop)
 	{
-		std::unordered_set<const Bus*> unq_buses;
+		/*std::unordered_set<const Bus*> unq_buses;
 		unq_buses.insert(stop->buses_.begin(), stop->buses_.end());
-		return unq_buses;
+		return unq_buses;*/
+
+		if (unique_buses_.empty()) {
+			return {};
+		}
+
+		if (unique_buses_.find(stop->name_) != unique_buses_.end())
+		{
+			return unique_buses_.at(stop->name_);
+		}
+		return {};
 	}
 
 	void TransportCatalogue::AddStop(std::string_view name, const Coordinates coordinates)
@@ -105,9 +125,12 @@ namespace transport_catalogue {
 
 		buses_.push_back(std::move(bus_temp)); //deque<Bus>
 		busname_to_bus_[buses_.back().name_] = &buses_.back(); //u_map<Bus*>
+		
 
 		for (auto& stop : stops) {
+			
 			stopname_to_stops_.at(stop)->buses_.push_back(&buses_.back());
+			unique_buses_[stopname_to_stops_.at(stop)->name_].insert(&buses_.back());
 		}
 	}
 
@@ -124,12 +147,12 @@ namespace transport_catalogue {
 		distance_.insert({ distance_pair, distance });
 	}
 
-	std::unordered_map<std::string_view, Bus*> TransportCatalogue::GetBuses()
+	const std::unordered_map<std::string_view, Bus*> &TransportCatalogue::GetBuses() const
 	{
 		return busname_to_bus_;
 	}
 
-	std::unordered_map<std::string_view, Stop*> TransportCatalogue::GetStops()
+	const std::unordered_map<std::string_view, Stop*> &TransportCatalogue::GetStops() const
 	{
 		return stopname_to_stops_;
 	}

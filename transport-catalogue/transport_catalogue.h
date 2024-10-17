@@ -20,26 +20,30 @@ namespace transport_catalogue {
 	};
 
 	class TransportCatalogue {
-	public:
-		double GetLength(Bus* bus);
-		int GetBusDistance(Bus* bus);
+	public:		
+		Statistic GetRouteStatistic(Bus* bus);
 		Stop* GetStop(std::string_view stop);
 		Bus* GetBus(std::string_view bus);
+		
 		std::unordered_set <const Bus*> GetUniqueBuses(Stop* stop);
 		void AddStop(std::string_view name, const Coordinates coordinate);
 		void AddRoute(std::string_view bus_name, const std::vector<std::string_view> &stops);
 		std::unordered_set<Stop*> GetUniqueStops(Bus* bus);
 		void AddDistance(std::string_view stop_from, std::string_view stop_to, int distance);
-		//test
-		std::unordered_map<std::string_view, Bus*> GetBuses();
-		std::unordered_map<std::string_view, Stop*> GetStops();
+		//теперь константные методы
+		const std::unordered_map<std::string_view, Bus*> &GetBuses() const;
+		const std::unordered_map<std::string_view, Stop*> &GetStops() const;
 
 	private:
+		const double GetLength(Bus* bus) const;
+		const int GetBusDistance(Bus* bus) const;
 		std::deque<Stop> stops_;
 		std::deque<Bus> buses_;
 		std::unordered_map<std::string_view, Stop*> stopname_to_stops_;
 		std::unordered_map<std::string_view, Bus*> busname_to_bus_;
 
 		std::unordered_map<std::pair<const Stop*, const Stop*>, int, PairHasher> distance_;
+		std::unordered_map<std::string_view, std::unordered_set<const Bus*>> unique_buses_;
+		
 	};
 }

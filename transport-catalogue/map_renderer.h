@@ -35,23 +35,24 @@ namespace map_renderer {
     class Renderer {
 
     public:     
-
-        void PrintMap(transport_catalogue::TransportCatalogue& tq, std::ostream& output);
-        void AddBussesLine(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
-        void AddBusTitle(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
-        void AddBusCyrcle(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
-        void AddBusStopName(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
-        void SetStandBusBaseTextSettings(RenderSettings& rendset, svg::Text& txt);
-        void SetStandBusTextSettings(RenderSettings& rendset, svg::Text& txt);
-        void SetStandStopSettings(RenderSettings& rendset, svg::Text& txt_base, svg::Text &txt_text);
-        
         Renderer() = default;
-        
+        void PrintMap(transport_catalogue::TransportCatalogue& tq, std::ostream& output);
         void AddSettings(RenderSettings& settings);
         void AddCoords(transport_catalogue::TransportCatalogue& tq);
         void PrintMapOut(transport_catalogue::TransportCatalogue& tq, std::ostream& output);
         
     private:
+        //часть методов перенесена в приватную часть
+        std::vector<std::string> GetSortedBuses(transport_catalogue::TransportCatalogue& tq);
+        void AddBussesLine(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
+        void UpDocumentTitle(svg::Document& document, Bus* current_bus, std::vector<geo::Coordinates> &stops_geo_coordinates, size_t color_position);
+        void AddBusTitle(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
+        void AddBusCyrcle(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
+        void AddBusStopName(transport_catalogue::TransportCatalogue& tq, svg::Document& document);
+        void SetStandBusBaseTextSettings(RenderSettings& rendset, svg::Text& txt);
+        void SetStandBusTextSettings(RenderSettings& rendset, svg::Text& txt);
+        void SetStandStopSettings(RenderSettings& rendset, svg::Text& txt_base, svg::Text& txt_text);
+       
 
         RenderSettings settings_;
         svg::Document document_;

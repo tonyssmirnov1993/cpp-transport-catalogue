@@ -21,4 +21,10 @@ namespace transport_catalogue {
 		std::vector<Stop*>bus_;
 		bool is_round_trip_; 
 	};
+
+	struct Statistic {
+		double stat_lenght_ = 0.0;
+		int stat_distance_ = 0;
+		
+	};
 }
