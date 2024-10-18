@@ -43,7 +43,6 @@ void JsonReader::ParseNodeStat(const json::Node& node, std::vector<StatRequest>&
             else {
                 std::cout << "Error: base_requests is not array"s;
             }
-
         }
     }
 }
@@ -54,73 +53,12 @@ json::Document JsonReader::ExecuteQueries(TransportCatalogue& catalogue, std::ve
 
     for (StatRequest req : stat_request) {
         if (req.type == "Stop") {
-            //=========старый вариант=============
-            //json::Dictionary result;
-            //json::Array buses;
-            //std::vector<std::string> str_buses;
-            //std::string str_not_f = "not found";
-            //
-            //if (catalogue.GetStop(req.name) == nullptr) {
-            //    result.emplace("request_id", json::Node{ req.id });
-            //    result.emplace("error_message", json::Node{ str_not_f });
-            //    result_queries.push_back(result);
-            //}
-            //else {
-            //    Stop* stop = catalogue.GetStop(req.name);
-            //    result.emplace("request_id", json::Node{ req.id });
-            //    
-            //    for (auto& bus : catalogue.GetUniqueBuses(stop)) {
-            //        str_buses.push_back(bus->name_);
-            //       
-            //    }
-            //    std::sort(str_buses.begin(), str_buses.end());
-            //    for (std::string& bus_s : str_buses) {
-            //        Bus* bus = catalogue.GetBus(bus_s);
-            //        buses.push_back(bus->name_);//
-            //    }
-            //    result.emplace("buses", json::Node{ buses });
-            //    result_queries.emplace_back(result);
-            //}
-            //============новый=============
             result_queries.push_back(UpdExecuteStop(req,catalogue));
         }
         else if (req.type == "Bus") {
-            //===============старый вариант===============
-           /* json::Dictionary result;
-            std::string str_not_f = "not found";
-            Bus* bus =catalogue.GetBus(req.name);
-            
-            if (catalogue.GetBus(req.name) == nullptr) {
-                result.emplace("request_id", json::Node{ req.id });
-                result.emplace("error_message", json::Node{ str_not_f });
-                result_queries.emplace_back(result);
-            }
-            else {
-                auto curv = double(catalogue.GetBusDistance(bus) / catalogue.GetLength(bus));
-                result.emplace("request_id", json::Node{ req.id });                
-                result.emplace("curvature", json::Node{ curv });
-                result.emplace("route_length", json::Node{ catalogue.GetBusDistance(bus) });
-                result.emplace("stop_count", json::Node{ int(bus->bus_.size()) });
-                result.emplace("unique_stop_count", json::Node{ int(catalogue.GetUniqueStops(bus).size()) });
-                result_queries.emplace_back(result);
-            } */   
-            //==================новый=============
             result_queries.emplace_back(UpdExecuteBuses(req, catalogue));
         }
         if (req.type == "Map") {
-            //=============старый вариант=============
-            /*json::Dictionary result;
-            std::ostringstream map_stream;
-            std::string line;
-
-            render.PrintMapOut(catalogue, map_stream);
-
-            line = map_stream.str();
-           
-            result.emplace("map", json::Node{ line });           
-            result.emplace("request_id", json::Node{ req.id });
-            result_queries.emplace_back(result);*/
-            //============новый==================
             result_queries.emplace_back(UpdExecuteMap(req, catalogue, render));
         }       
     }
@@ -154,11 +92,8 @@ json::Dictionary JsonReader::UpdExecuteStop(StatRequest& req, TransportCatalogue
             buses.push_back(bus->name_);//
         }
         result.emplace("buses", json::Node{ buses });
-        return result;
-      
-    }
-
-   
+        return result;     
+    }   
 }
 
 json::Dictionary JsonReader::UpdExecuteBuses(StatRequest& req, TransportCatalogue& catalogue)
@@ -173,7 +108,7 @@ json::Dictionary JsonReader::UpdExecuteBuses(StatRequest& req, TransportCatalogu
         return result;
     }
     else {
-        auto curv = double(stat_bus.stat_distance_ / stat_bus.stat_lenght_);
+        auto curv = double(stat_bus.stat_distance_ / stat_bus.stat_length_);
         result.emplace("request_id", json::Node{ req.id });
         result.emplace("curvature", json::Node{ curv });
         result.emplace("route_length", json::Node{ stat_bus.stat_distance_ });

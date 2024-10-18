@@ -23,7 +23,7 @@ namespace transport_catalogue {
 	};
 
 	struct Statistic {
-		double stat_lenght_ = 0.0;
+		double stat_length_ = 0.0;
 		int stat_distance_ = 0;
 		
 	};

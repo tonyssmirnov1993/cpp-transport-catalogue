@@ -54,7 +54,7 @@ namespace transport_catalogue {
 		
 		Statistic stat;
 		stat.stat_distance_ = GetBusDistance(bus);
-		stat.stat_lenght_ = GetLength(bus);
+		stat.stat_length_ = GetLength(bus);
 		return stat;
 	}
 
@@ -64,8 +64,9 @@ namespace transport_catalogue {
 			return nullptr;
 		}
 
-		if (stopname_to_stops_.find(stop) != stopname_to_stops_.end()) {
-			return stopname_to_stops_.at(stop);
+		std::unordered_map<std::string_view, Stop*>::iterator it_stop = stopname_to_stops_.find(stop);
+		if (it_stop != stopname_to_stops_.end()) {
+			return it_stop->second;
 		}
 		return nullptr;
 	}
@@ -85,10 +86,6 @@ namespace transport_catalogue {
 
 	std::unordered_set <const Bus*>TransportCatalogue::GetUniqueBuses(Stop* stop)
 	{
-		/*std::unordered_set<const Bus*> unq_buses;
-		unq_buses.insert(stop->buses_.begin(), stop->buses_.end());
-		return unq_buses;*/
-
 		if (unique_buses_.empty()) {
 			return {};
 		}

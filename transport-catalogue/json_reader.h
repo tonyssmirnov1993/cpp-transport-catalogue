@@ -19,7 +19,6 @@ public:
     
    
 private:
-    //часть методов перенесена в приватную часть
     json::Dictionary UpdExecuteStop(StatRequest& req, TransportCatalogue& catalogue);
     json::Dictionary UpdExecuteBuses(StatRequest& req, TransportCatalogue& catalogue);
     json::Dictionary UpdExecuteMap(StatRequest& req, TransportCatalogue& catalogue, map_renderer::Renderer& render);
