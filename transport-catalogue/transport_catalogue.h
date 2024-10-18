@@ -25,7 +25,7 @@ namespace transport_catalogue {
 		Stop* GetStop(std::string_view stop);
 		Bus* GetBus(std::string_view bus);
 		
-		std::unordered_set <const Bus*> GetUniqueBuses(Stop* stop);
+		const std::unordered_set <const Bus*> &GetUniqueBuses(Stop* stop) const;
 		void AddStop(std::string_view name, const Coordinates coordinate);
 		void AddRoute(std::string_view bus_name, const std::vector<std::string_view> &stops);
 		std::unordered_set<Stop*> GetUniqueStops(Bus* bus);

@@ -76,23 +76,23 @@ namespace transport_catalogue {
 		if (busname_to_bus_.empty()) {
 			return nullptr;
 		}
-
-		if (busname_to_bus_.find(bus) != busname_to_bus_.end())
+		std::unordered_map<std::string_view, Bus*>::iterator it_bus = busname_to_bus_.find(bus);
+		if (it_bus != busname_to_bus_.end())
 		{
-			return busname_to_bus_.at(bus);
+			return it_bus->second;
 		}
 		return nullptr;
 	}
 
-	std::unordered_set <const Bus*>TransportCatalogue::GetUniqueBuses(Stop* stop)
+	const std::unordered_set <const Bus*>&TransportCatalogue::GetUniqueBuses(Stop* stop) const
 	{
 		if (unique_buses_.empty()) {
 			return {};
 		}
-
-		if (unique_buses_.find(stop->name_) != unique_buses_.end())
+		std::unordered_map<std::string_view, std::unordered_set<const Bus*>>::const_iterator it_setbus = unique_buses_.find(stop->name_);
+		if (it_setbus != unique_buses_.end())
 		{
-			return unique_buses_.at(stop->name_);
+			return it_setbus->second;
 		}
 		return {};
 	}
