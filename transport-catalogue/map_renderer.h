@@ -38,7 +38,7 @@ namespace map_renderer {
         Renderer() = default;
         void PrintMap(transport_catalogue::TransportCatalogue& tq, std::ostream& output);
         void AddSettings(RenderSettings& settings);
-        void AddCoords(transport_catalogue::TransportCatalogue& tq);
+        void AddCoordinates(transport_catalogue::TransportCatalogue& tq);
         void PrintMapOut(transport_catalogue::TransportCatalogue& tq, std::ostream& output);
         
     private:

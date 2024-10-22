@@ -64,7 +64,7 @@ Text& Text::SetPosition(Point position)
     return *this;   
 }
 
-Text& Text::SetOffset(Point offset)
+Text& Text::SetOffSet(Point offset)
 {
     offset_ = offset;
     return *this;

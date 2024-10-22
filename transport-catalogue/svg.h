@@ -9,7 +9,7 @@
 
 namespace svg {
 
-    using namespace std::string_view_literals;
+using namespace std::string_view_literals;
 
     enum class StrokeLineCap {
         BUTT,
@@ -91,14 +91,14 @@ namespace svg {
         uint8_t blue = 0;
         double opacity = 1.0;
     };
-    inline void PrintColor(std::ostream& output, RGBA& rgba);
-    
-    
+    inline void PrintColor(std::ostream& output, RGBA& rgba);        
 
     using Color = std::variant<std::monostate, std::string, RGB, RGBA>;
+
     inline const Color NoneColor{ "none" };
     inline void PrintColor(std::ostream& output, std::monostate);
     inline void PrintColor(std::ostream& output, std::string &color);
+
     std::ostream& operator<<(std::ostream& output, const Color& color);
 
     //================= PathProps ======================
@@ -268,7 +268,7 @@ public:
     Text& SetPosition(Point pos);
 
     // Задаёт смещение относительно опорной точки (атрибуты dx, dy)
-    Text& SetOffset(Point offset);
+    Text& SetOffSet(Point offset);
 
     // Задаёт размеры шрифта (атрибут font-size)
     Text& SetFontSize(uint32_t size);
@@ -302,21 +302,19 @@ class ObjectContainer {
 
 public:
     //Метод Add добавляет в svg-документ любой объект-наследник svg::Object.    
-    template<typename Obj>
-    void Add(Obj obj);
+    template<typename Object>
+    void Add(Object obj);
 
     virtual void AddPtr(std::unique_ptr<Object>&& obj) = 0;
-
-
     virtual ~ObjectContainer() = default;
-    //private:
+
     std::vector< std::unique_ptr<Object>> objects_;
 };
 
-template<typename Obj>
+template<typename Object>
 
-void ObjectContainer::Add(Obj obj) {
-    objects_.emplace_back(std::make_unique<Obj>(std::move(obj)));
+void ObjectContainer::Add(Object obj) {
+    objects_.emplace_back(std::make_unique<Object>(std::move(obj)));
 }
 
 class Drawable {
@@ -331,14 +329,8 @@ class Document : public ObjectContainer{
 
 public:
     // Добавляет в svg-документ объект-наследник svg::Object
-    void AddPtr(std::unique_ptr<Object>&& obj);
-    
+    void AddPtr(std::unique_ptr<Object>&& obj);    
     // Выводит в ostream svg-представление документа
-    void Render(std::ostream& output) const;
-
-    // Прочие методы и данные, необходимые для реализации класса Document
-//private:
-  
+    void Render(std::ostream& output) const;  
 };
-
 }// namespace svg

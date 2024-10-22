@@ -11,13 +11,13 @@ void JsonReader::LoadJson(json::Document& document, TransportCatalogue& tq, std:
 void JsonReader::ParseNode(const json::Node& root, TransportCatalogue& tq, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render)
 {
     json::Dictionary root_dict;
-    if (root.IsMap()) {
+    if (root.IsDict()) {
 
-        root_dict = root.AsMap();
+        root_dict = root.AsDict();
         ParseRenderRequests(root_dict.at("render_settings"), /*tq,*/ render);
         ParseBaseRequests(root_dict.at("base_requests"), tq);       
         ParseNodeStat(root_dict.at("stat_requests"), stat_request);
-        render.AddCoords(tq); 
+        render.AddCoordinates(tq);
     }
 }
 
@@ -30,8 +30,8 @@ void JsonReader::ParseNodeStat(const json::Node& node, std::vector<StatRequest>&
     if(node.IsArray()){
         stat_requests = node.AsArray();
         for (json::Node& req_node : stat_requests) {
-            if (req_node.IsMap()) {
-                req_map = req_node.AsMap();
+            if (req_node.IsDict()) {
+                req_map = req_node.AsDict();
                 req.id = req_map.at("id").AsInt();
                 if (req_map.find("name") != req_map.end()) {
                     req.name = req_map.at("name").AsString();
@@ -143,8 +143,8 @@ void JsonReader::ParseBaseRequests(const json::Node& node, TransportCatalogue& t
     if (node.IsArray()) {
         base_req = node.AsArray();
         for (json::Node& node : base_req) {
-            if (node.IsMap()) {
-                req_map = node.AsMap();
+            if (node.IsDict()) {
+                req_map = node.AsDict();
                 req_node = req_map.at("type");
                 if (req_node.AsString() == "Bus") {
 
@@ -165,9 +165,9 @@ void JsonReader::ParseRenderRequests(const json::Node& node,/* TransportCatalogu
    
     json::Dictionary rend_req;
     
-    if (node.IsMap()) {
+    if (node.IsDict()) {
 
-        rend_req = node.AsMap();
+        rend_req = node.AsDict();
 
         set.width = rend_req.at("width").AsDouble();
         set.height = rend_req.at("height").AsDouble();
@@ -191,7 +191,7 @@ void JsonReader::ParseRenderRequests(const json::Node& node,/* TransportCatalogu
 
 void JsonReader::ParseUnderColor(const json::Node& node, map_renderer::RenderSettings& settings)
 {
-    json::Dictionary rend_req = node.AsMap();
+    json::Dictionary rend_req = node.AsDict();
     if (rend_req.at("underlayer_color").IsArray()) {
         json::Array under_col = rend_req.at("underlayer_color").AsArray();
         if (under_col.size() == 4) {
@@ -218,7 +218,7 @@ void JsonReader::ParseUnderColor(const json::Node& node, map_renderer::RenderSet
 
 void JsonReader::ParseColorPalette(const json::Node& node, map_renderer::RenderSettings& settings)
 {
-    json::Dictionary rend_req = node.AsMap();
+    json::Dictionary rend_req = node.AsDict();
   
     if (rend_req.at("color_palette").IsArray()) {
         for (auto& clr : rend_req.at("color_palette").AsArray()) {
@@ -252,7 +252,7 @@ void JsonReader::ParseBus(const json::Node& node, TransportCatalogue& tq)
     std::string name = "";
     bool is_round_trip = false;
 
-    for (auto& [key, value] : node.AsMap()) {
+    for (auto& [key, value] : node.AsDict()) {
         if (key == "name") {
             name = value.AsString();
         }
@@ -285,12 +285,12 @@ void JsonReader::ParseStop(const json::Node& node, TransportCatalogue& tq)
     std::string stop_name = "";
     geo::Coordinates coordinate_stop{};
     
-    stop_name = node.AsMap().at("name").AsString();
-    coordinate_stop.lat = node.AsMap().at("latitude").AsDouble();
-    coordinate_stop.lng = node.AsMap().at("longitude").AsDouble();
+    stop_name = node.AsDict().at("name").AsString();
+    coordinate_stop.lat = node.AsDict().at("latitude").AsDouble();
+    coordinate_stop.lng = node.AsDict().at("longitude").AsDouble();
 
     auto stop = tq.GetStop(stop_name);
-    auto& st = node.AsMap().at("road_distances").AsMap();
+    auto& st = node.AsDict().at("road_distances").AsDict();
     
     stops_distances_.insert({ stop_name, st });
     if (stop == nullptr) {
@@ -310,10 +310,10 @@ void JsonReader::ParseDistance( TransportCatalogue& tq)
   
     for (auto &[station_from, station_to] : stops_distances_) {
 
-        if (station_to.AsMap().empty()) {
+        if (station_to.AsDict().empty()) {
             tq.AddDistance(station_from, std::move(prev_station), std::move(prev_distance));
         }
-        for (auto& [station_to_name, station_distance] : station_to.AsMap()) {
+        for (auto& [station_to_name, station_distance] : station_to.AsDict()) {
             prev_station = station_from;
             prev_distance = station_distance.AsInt();
 

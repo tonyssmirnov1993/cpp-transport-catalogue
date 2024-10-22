@@ -164,7 +164,7 @@ namespace map_renderer {
             stop_names.emplace_back(stop.second->name_);            
         }
 
-        SphereProjector proj(geo_coordinates_.begin(),
+        SphereProjector project(geo_coordinates_.begin(),
             geo_coordinates_.end(), settings.width, settings.height, settings.padding);
 
         std::sort(stop_names.begin(), stop_names.end());
@@ -173,9 +173,9 @@ namespace map_renderer {
             Stop* current_stop = tq.GetStop(stop);
 
             svg::Circle stop_cyrcle;
-            svg::Point screen_coord = proj(current_stop->coordinates_);
+            svg::Point screen_coordinates = project(current_stop->coordinates_);
 
-            stop_cyrcle.SetCenter(screen_coord).SetRadius(settings.stop_radius);
+            stop_cyrcle.SetCenter(screen_coordinates).SetRadius(settings.stop_radius);
 
             stop_cyrcle.SetFillColor("white");
             document.Add(stop_cyrcle);
@@ -184,7 +184,7 @@ namespace map_renderer {
 
     void Renderer::SetStandBusBaseTextSettings(RenderSettings& rendset, svg::Text& txt)
     {
-        txt.SetOffset(rendset.bus_label_offset).SetFontSize(rendset.bus_label_font_size);
+        txt.SetOffSet(rendset.bus_label_offset).SetFontSize(rendset.bus_label_font_size);
         txt.SetFontFamily("Verdana");
         txt.SetFontWeight("bold").SetStrokeWidth(rendset.underlayer_width);
         txt.SetStrokeLineCap(svg::StrokeLineCap::ROUND).SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
@@ -193,18 +193,18 @@ namespace map_renderer {
   
     void Renderer::SetStandBusTextSettings(RenderSettings& rendset, svg::Text& txt)
     {
-        txt.SetOffset(rendset.bus_label_offset).SetFontSize(rendset.bus_label_font_size);
+        txt.SetOffSet(rendset.bus_label_offset).SetFontSize(rendset.bus_label_font_size);
         txt.SetFontFamily("Verdana");
         txt.SetFontWeight("bold")/*.SetStrokeWidth(rendset.underlayer_width)*/;       
     }
 
     void Renderer::SetStandStopSettings(RenderSettings& rendset, svg::Text& txt_base, svg::Text& txt_text)
     {
-        txt_base.SetOffset(rendset.stop_label_offset).SetFontSize(rendset.stop_label_font_size);
+        txt_base.SetOffSet(rendset.stop_label_offset).SetFontSize(rendset.stop_label_font_size);
         txt_base.SetFontFamily("Verdana").SetFillColor(rendset.underlayer_color).SetStrokeColor(rendset.underlayer_color);
         txt_base.SetStrokeWidth(rendset.underlayer_width);
         txt_base.SetStrokeLineCap(svg::StrokeLineCap::ROUND).SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
-        txt_text.SetOffset(rendset.stop_label_offset).SetFontSize(rendset.stop_label_font_size);
+        txt_text.SetOffSet(rendset.stop_label_offset).SetFontSize(rendset.stop_label_font_size);
         txt_text.SetFontFamily("Verdana").SetFillColor("black");       
     }  
 
@@ -263,7 +263,7 @@ namespace map_renderer {
         this-> settings_ = settings;
     }
 
-    void Renderer::AddCoords(transport_catalogue::TransportCatalogue& tq)
+    void Renderer::AddCoordinates(transport_catalogue::TransportCatalogue& tq)
     {
         for (auto& bus : tq.GetBuses()) {
 

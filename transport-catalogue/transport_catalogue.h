@@ -37,11 +37,11 @@ namespace transport_catalogue {
 	private:
 		const double GetLength(Bus* bus) const;
 		const int GetBusDistance(Bus* bus) const;
+
 		std::deque<Stop> stops_;
 		std::deque<Bus> buses_;
 		std::unordered_map<std::string_view, Stop*> stopname_to_stops_;
 		std::unordered_map<std::string_view, Bus*> busname_to_bus_;
-
 		std::unordered_map<std::pair<const Stop*, const Stop*>, int, PairHasher> distance_;
 		std::unordered_map<std::string_view, std::unordered_set<const Bus*>> unique_buses_;
 		
