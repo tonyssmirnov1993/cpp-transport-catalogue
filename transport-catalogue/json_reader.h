@@ -1,41 +1,39 @@
 #pragma once
+
 #include "json.h"
 #include "transport_catalogue.h"
 #include "map_renderer.h"
+#include "request_handler.h"
 
-using namespace transport_catalogue;
-
-struct StatRequest {
-    int id;
-    std::string type;
-    std::string name;
-};
-
+#include <iostream>
 
 class JsonReader {
 public:
-    json::Document ExecuteQueries(TransportCatalogue& catalogue, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
-    void LoadJson(json::Document& document, TransportCatalogue& tq, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
-    
-   
+    JsonReader(std::istream& input)
+        : input_(json::Load(input))
+    {}
+
+    const json::Node& GetBaseRequests() const;
+    const json::Node& GetStatRequests() const;
+    const json::Node& GetRenderSettings() const;
+    const json::Node& GetRoutingSettings() const;
+
+    void ProcessRequests(const json::Node& stat_requests, RequestHandler& rh) const;
+
+    void FillCatalogue(transport_catalogue::TransportCatalogue& catalogue);
+    renderer::MapRenderer FillRenderSettings(const json::Node& settings) const;
+    transport_catalogue::Router FillRoutingSettings(const json::Node& settings) const;
+
+    const json::Node PrintRoute(const json::Dictionary& request_map, RequestHandler& rh) const;
+    const json::Node PrintStop(const json::Dictionary& request_map, RequestHandler& rh) const;
+    const json::Node PrintMap(const json::Dictionary& request_map, RequestHandler& rh) const;
+    const json::Node PrintRouting(const json::Dictionary& request_map, RequestHandler& rh) const;
+
 private:
-    json::Dictionary UpdExecuteStop(StatRequest& req, TransportCatalogue& catalogue);
-    json::Dictionary UpdExecuteBuses(StatRequest& req, TransportCatalogue& catalogue);
-    json::Dictionary UpdExecuteMap(StatRequest& req, TransportCatalogue& catalogue, map_renderer::Renderer& render);
-    void ParseNode(const json::Node& root, TransportCatalogue& tq, std::vector<StatRequest>& stat_request, map_renderer::Renderer& render);
-    void ParseNodeStat(const json::Node& node, std::vector<StatRequest>& stat_request);
-    void ParseBaseRequests(const json::Node& document, TransportCatalogue& tq);
-    //====================Renderer======================
-    void ParseRenderRequests(const json::Node& document, /*TransportCatalogue& tq,*/ map_renderer::Renderer& render);
-    void ParseUnderColor(const json::Node& node,/*map_renderer::Renderer& rend*/map_renderer::RenderSettings& settings);
-    void ParseColorPalette(const json::Node& node,/* map_renderer::Renderer& rend*/map_renderer::RenderSettings& settings);
-    void ParseBus(const json::Node& node, TransportCatalogue& tq);
-    void ParseStop(const json::Node& node, TransportCatalogue& tq);
-    void ParseDistance(TransportCatalogue& tq);
+    json::Document input_;
+    json::Node dummy_ = nullptr;
 
-   json::Dictionary stops_distances_;
-
-public:
-    
-    JsonReader() = default;
+    std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> FillStop(const json::Dictionary& request_map) const;
+    void FillStopDistances(transport_catalogue::TransportCatalogue& catalogue) const;
+    std::tuple<std::string_view, std::vector<const transport_catalogue::Stop*>, bool> FillRoute(const json::Dictionary& request_map, transport_catalogue::TransportCatalogue& catalogue) const;
 };

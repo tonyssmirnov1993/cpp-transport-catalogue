@@ -1,92 +1,66 @@
 #pragma once
-#include <string>
-#include <vector>
 #include "json.h"
+
+#include <optional>
 
 namespace json {
 
-class Builder {
-private:
-    class BaseContext;
-    class DictionaryValueContext;
-    class DictionaryItemContext;
-    class ArrayItemContext;
-
-public:
-    Builder();
-    Node Build();
-    DictionaryValueContext Key(std::string key);
-    BaseContext Value(Node::Value value);
-    DictionaryItemContext StartDictionary();
-    ArrayItemContext StartArray();
-    BaseContext EndDictionary();
-    BaseContext EndArray();
-
-private:
-    Node root_;
-    std::vector<Node*> nodes_stack_;
-
-    Node::Value& GetCurrentValue();
-    const Node::Value& GetCurrentValue() const;
-
-    void AssertNewObjectContext() const;
-    void AddObject(Node::Value value, bool one_shot);
-
-    class BaseContext {
+    class Builder {
     public:
-        BaseContext(Builder& builder) : builder_(builder) {}
-        Node Build() {
-            return builder_.Build();
-        }
-        DictionaryValueContext Key(std::string key) {
-            return builder_.Key(std::move(key));
-        }
-        BaseContext Value(Node::Value value) {
-            return builder_.Value(std::move(value));
-        }
-        DictionaryItemContext StartDictionary() {
-            return builder_.StartDictionary();
-        }
-        ArrayItemContext StartArray() {
-            return builder_.StartArray();
-        }
-        BaseContext EndDictionary() {
-            return builder_.EndDictionary();
-        }
-        BaseContext EndArray() {
-            return builder_.EndArray();
-        }
+        class DictionaryItemContext;
+        class DictionaryKeyContext;
+        class ArrayItemContext;
+
+        Builder();
+        DictionaryKeyContext Key(std::string key);
+        Builder& Value(Node::Value value);
+        DictionaryItemContext StartDictionary();
+        Builder& EndDictionary();
+        ArrayItemContext StartArray();
+        Builder& EndArray();
+        Node Build();
+        Node GetNode(Node::Value value);
+
+    private:
+        Node root_{ nullptr };
+        std::vector<Node*> nodes_stack_;
+        std::optional<std::string> key_{ std::nullopt };
+    };
+
+    class Builder::DictionaryItemContext {
+    public:
+        DictionaryItemContext(Builder& builder);
+
+        DictionaryKeyContext Key(std::string key);
+        Builder& EndDictionary();
+
     private:
         Builder& builder_;
     };
 
-    class DictionaryValueContext : public BaseContext {
+    class Builder::ArrayItemContext {
     public:
-        DictionaryValueContext(BaseContext base) : BaseContext(base) {}
-        DictionaryItemContext Value(Node::Value value) { return BaseContext::Value(std::move(value)); }
-        Node Build() = delete;
-        DictionaryValueContext Key(std::string key) = delete;
-        BaseContext EndDict() = delete;
-        BaseContext EndArray() = delete;
+        ArrayItemContext(Builder& builder);
+
+        ArrayItemContext Value(Node::Value value);
+        DictionaryItemContext StartDict();
+        Builder& EndArray();
+        ArrayItemContext StartArray();
+
+    private:
+        Builder& builder_;
     };
 
-    class DictionaryItemContext : public BaseContext {
+    class Builder::DictionaryKeyContext {
     public:
-        DictionaryItemContext(BaseContext base) : BaseContext(base) {}
-        Node Build() = delete;
-        BaseContext Value(Node::Value value) = delete;
-        BaseContext EndArray() = delete;
-        DictionaryItemContext StartDictionary() = delete;
-        ArrayItemContext StartArray() = delete;
+        DictionaryKeyContext(Builder& builder);
+
+        DictionaryItemContext Value(Node::Value value);
+        ArrayItemContext StartArray();
+        DictionaryItemContext StartDict();
+
+    private:
+        Builder& builder_;
     };
 
-    class ArrayItemContext : public BaseContext {
-    public:
-        ArrayItemContext(BaseContext base) : BaseContext(base) {}
-        ArrayItemContext Value(Node::Value value) { return BaseContext::Value(std::move(value)); }
-        Node Build() = delete;
-        DictionaryValueContext Key(std::string key) = delete;
-        BaseContext EndDictionary() = delete;
-    };
-};
-} //namespace json
+} // namespace json

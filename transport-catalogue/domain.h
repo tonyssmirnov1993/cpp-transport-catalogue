@@ -1,30 +1,30 @@
 #pragma once
+#include "geo.h"
+
+#include <set>
 #include <string>
 #include <vector>
-#include "geo.h"
+
 
 namespace transport_catalogue {
 
-	struct Bus;
+    struct Stop {
+        std::string name;
+        geo::Coordinates coordinates;
+        std::set<std::string> buses_by_stop;
+    };
 
-	struct Stop {
+    struct Bus {
+        std::string number;
+        std::vector<const Stop*> stops;
+        bool is_circle;
+    };
 
+    struct BusStat {
+        size_t stops_count;
+        size_t unique_stops_count;
+        double route_length;
+        double curvature;
+    };
 
-		std::string name_;
-		geo::Coordinates coordinates_;
-		std::vector<Bus*>buses_{};
-	};
-
-	struct Bus {
-
-		std::string name_;
-		std::vector<Stop*>bus_;
-		bool is_round_trip_; 
-	};
-
-	struct Statistic {
-		double stat_length_ = 0.0;
-		int stat_distance_ = 0;
-		
-	};
-}
+} // namespace transport

@@ -1,58 +1,21 @@
-﻿#include <iostream>
-#include "json_reader.h"
-//#include "json_builder.h" =====TEST============
-#include "map_renderer.h"
-
-using namespace svg;
-using namespace std;
-using namespace transport_catalogue;
-using namespace map_renderer;
+﻿#include "json_reader.h"
+#include "request_handler.h"
+#include <fstream>
+#include <iostream>
 
 int main() {
-    {
-        vector<StatRequest> stat_request;
-        TransportCatalogue catalogue;
-        Renderer renderer;
-        JsonReader reader;
+    transport_catalogue::TransportCatalogue catalogue;
+    std::ifstream input("primer3.json");
+    JsonReader json_doc(input);
+    json_doc.FillCatalogue(catalogue);
 
-        {
+    const auto& stat_requests = json_doc.GetStatRequests();
+    const auto& render_settings = json_doc.GetRenderSettings();
+    const auto& renderer = json_doc.FillRenderSettings(render_settings);
+    const auto& routing_settings = json_doc.FillRoutingSettings(json_doc.GetRoutingSettings());
+    const transport_catalogue::Router router = { routing_settings, catalogue };
 
-            std::ifstream input("input.json");
+    RequestHandler rh(catalogue, renderer, router);
+    json_doc.ProcessRequests(stat_requests, rh);
 
-            json::Document document_input;
-            json::Document document_output;
-
-            std::ofstream out_test("output.json");
-
-            document_input = json::Load(input);
-
-            reader.LoadJson(document_input, catalogue, stat_request, renderer);
-
-            document_output = reader.ExecuteQueries(catalogue, stat_request, renderer);
-
-            json::Print(document_output, out_test);
-        }
-        //==============TEST===================
-        //json::Print(
-        //    json::Document{
-        //        // Форматирование не имеет формального значения:
-        //        // это просто цепочка вызовов методов
-        //json::Builder{}
-        //.StartDictionary()
-        //    .Key("key1"s).Value(123)
-        //    .Key("key2"s).Value("value2"s)
-        //    .Key("key3"s).StartArray()
-        //        .Value(456)
-        //        .StartDictionary().EndDictionary()
-        //        .StartDictionary()
-        //            .Key(""s).Value(nullptr)
-        //        .EndDictionary()
-        //        .Value(""s)
-        //    .EndArray()
-        //.EndDictionary()
-        //.Build()
-        //    },
-        //    cout
-        //);
-    }
 }
