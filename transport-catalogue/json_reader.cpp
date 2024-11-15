@@ -1,6 +1,6 @@
 #include "json_reader.h"
 #include "json_builder.h"
-#include <fstream>
+
 using namespace std::literals;
 
 const json::Node& JsonReader::GetBaseRequests() const {
@@ -33,8 +33,8 @@ void JsonReader::ProcessRequests(const json::Node& stat_requests, RequestHandler
         if (type == "Map"s) result.push_back(PrintMap(request_map, rh).AsDictionary());
         if (type == "Route"s) result.push_back(PrintRouting(request_map, rh).AsDictionary());
     }
-    std::ofstream out_test("output.json");
-    json::Print(json::Document{ result }, out_test);
+
+    json::Print(json::Document{ result }, std::cout);
 }
 
 void JsonReader::FillCatalogue(transport_catalogue::TransportCatalogue& catalogue) {
@@ -146,9 +146,11 @@ renderer::MapRenderer JsonReader::FillRenderSettings(const json::Node& settings)
     return render_settings;
 }
 
-transport_catalogue::Router JsonReader::FillRoutingSettings(const json::Node& settings) const {
-    transport_catalogue::Router routing_settings;
-    return transport_catalogue::Router{ settings.AsDictionary().at("bus_wait_time"s).AsInt(), settings.AsDictionary().at("bus_velocity"s).AsDouble() };
+transport_catalogue::RoutingSettings JsonReader::FillRoutingSettings(const json::Node& settings) const
+{
+    transport_catalogue::RoutingSettings routing_settings;
+
+    return transport_catalogue::RoutingSettings{ settings.AsDictionary().at("bus_wait_time"s).AsDouble(), settings.AsDictionary().at("bus_velocity"s).AsDouble()};
 }
 
 const json::Node JsonReader::PrintRoute(const json::Dictionary& request_map, RequestHandler& rh) const {

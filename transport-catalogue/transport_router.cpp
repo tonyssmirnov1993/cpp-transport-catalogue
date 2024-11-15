@@ -16,7 +16,7 @@ namespace transport_catalogue {
                     0,
                     vertex_id,
                     ++vertex_id,
-                    static_cast<double>(bus_wait_time_)
+                    static_cast<double>(settings_.bus_wait_time)
                 });
             ++vertex_id;
         }
@@ -43,14 +43,14 @@ namespace transport_catalogue {
                                               j - i,
                                               stop_ids_.at(stop_from->name) + 1,
                                               stop_ids_.at(stop_to->name),
-                                              static_cast<double>(dist_sum) / (bus_velocity_ * (100.0 / 6.0)) });
+                                              static_cast<double>(dist_sum) / (settings_.bus_velocity * KMH) });
 
                         if (!bus_info->is_circle) {
                             stops_graph.AddEdge({ bus_info->number,
                                                   j - i,
                                                   stop_ids_.at(stop_to->name) + 1,
                                                   stop_ids_.at(stop_from->name),
-                                                  static_cast<double>(dist_sum_inverse) / (bus_velocity_ * (100.0 / 6.0)) });
+                                                  static_cast<double>(dist_sum_inverse) / (settings_.bus_velocity * KMH) });
                         }
                     }
                 }
@@ -63,11 +63,11 @@ namespace transport_catalogue {
     }
 
     const std::optional<graph::Router<double>::RouteInfo> Router::FindRoute(const std::string_view stop_from, const std::string_view stop_to) const {
+        
         return router_->BuildRoute(stop_ids_.at(std::string(stop_from)), stop_ids_.at(std::string(stop_to)));
     }
 
     const graph::DirectedWeightedGraph<double>& Router::GetGraph() const {
         return graph_;
     }
-
 }

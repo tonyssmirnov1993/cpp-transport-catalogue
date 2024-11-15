@@ -5,7 +5,7 @@
 
 int main() {
     transport_catalogue::TransportCatalogue catalogue;
-    std::ifstream input("primer3.json");
+    std::ifstream input("primer1.json");
     JsonReader json_doc(input);
     json_doc.FillCatalogue(catalogue);
 

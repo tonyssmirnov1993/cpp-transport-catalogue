@@ -22,7 +22,8 @@ public:
 
     void FillCatalogue(transport_catalogue::TransportCatalogue& catalogue);
     renderer::MapRenderer FillRenderSettings(const json::Node& settings) const;
-    transport_catalogue::Router FillRoutingSettings(const json::Node& settings) const;
+   /* transport_catalogue::Router FillRoutingSettings(const json::Node& settings) const;*/
+    transport_catalogue::RoutingSettings  FillRoutingSettings(const json::Node& settings) const;//test
 
     const json::Node PrintRoute(const json::Dictionary& request_map, RequestHandler& rh) const;
     const json::Node PrintStop(const json::Dictionary& request_map, RequestHandler& rh) const;
