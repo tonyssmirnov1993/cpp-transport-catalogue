@@ -143,5 +143,4 @@ namespace renderer {
 
         return result;
     }
-
 } // namespace renderer

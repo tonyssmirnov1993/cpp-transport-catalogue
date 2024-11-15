@@ -26,9 +26,9 @@ namespace transport_catalogue {
         double route_length;
         double curvature;
     };
+
     struct RoutingSettings {
         double bus_wait_time = 0;
         double bus_velocity = 0;
     };
-
 } // namespace transport

@@ -1,7 +1,6 @@
 #pragma once
 #include "router.h"
 #include "transport_catalogue.h"
-
 #include <memory>
 
 namespace transport_catalogue {
@@ -16,8 +15,9 @@ namespace transport_catalogue {
 			BuildGraph(catalogue);
 		}
 		
-		const std::optional<graph::Router<double>::RouteInfo> FindRoute(const std::string_view stop_from, const std::string_view stop_to) const;	
-		const graph::DirectedWeightedGraph<double>& GetGraph() const;
+		const std::optional<graph::RouterInfoRef<double>> FindRoute(const std::string_view stop_from, const std::string_view stop_to) const;
+
+	private :const graph::DirectedWeightedGraph<double>& GetGraph() const;
 
 	private:
 			

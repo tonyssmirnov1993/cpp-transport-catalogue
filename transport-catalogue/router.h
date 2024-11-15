@@ -109,4 +109,11 @@ namespace graph {
         return RouteInfo{ weight, std::move(edges) };
     }
 
+    template <typename Weight>
+    struct RouterInfoRef
+    {
+        graph::Router<double>::RouteInfo router_info;
+        std::vector<graph::Edge<Weight>> edges;
+    };
+   
 }  // namespace graph

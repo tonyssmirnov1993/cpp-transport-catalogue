@@ -1,6 +1,5 @@
 #pragma once
 #include "json.h"
-
 #include <optional>
 
 namespace json {

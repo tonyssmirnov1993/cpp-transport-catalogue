@@ -245,8 +245,7 @@ const json::Node JsonReader::PrintRouting(const json::Dictionary& request_map, R
         json::Array items;
         double total_time = 0.0;
         items.reserve(routing.value().edges.size());
-        for (auto& edge_id : routing.value().edges) {
-            const graph::Edge<double> edge = rh.GetRouterGraph().GetEdge(edge_id);
+        for (auto& edge : routing.value().edges) {
             if (edge.quality == 0) {
                 items.emplace_back(json::Node(json::Builder{}
                     .StartDictionary()
@@ -280,6 +279,5 @@ const json::Node JsonReader::PrintRouting(const json::Dictionary& request_map, R
             .EndDictionary()
             .Build();
     }
-
     return result;
 }

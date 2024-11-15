@@ -167,5 +167,4 @@ namespace json {
     Builder::DictionaryItemContext Builder::DictionaryKeyContext::StartDict() {
         return builder_.StartDictionary();
     }
-
 } // namespace json

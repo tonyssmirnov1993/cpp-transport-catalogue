@@ -3,9 +3,7 @@
 #include <iterator>
 
 namespace json {
-
     namespace {
-
         using namespace std::literals;
 
         Node LoadNode(std::istream& input);
@@ -333,7 +331,6 @@ namespace json {
                 },
                 node.GetValue());
         }
-
     }  // namespace
 
     Document Load(std::istream& input) {
@@ -343,5 +340,4 @@ namespace json {
     void Print(const Document& document, std::ostream& output) {
         PrintNode(document.GetRoot(), PrintContext{ output });
     }
-
 } // namespace json

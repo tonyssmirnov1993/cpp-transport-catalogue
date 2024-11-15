@@ -78,5 +78,4 @@ namespace transport_catalogue {
         }
         return result;
     }
-
 }  // namespace transport

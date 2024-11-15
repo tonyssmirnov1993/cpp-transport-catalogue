@@ -62,9 +62,16 @@ namespace transport_catalogue {
         return graph_;
     }
 
-    const std::optional<graph::Router<double>::RouteInfo> Router::FindRoute(const std::string_view stop_from, const std::string_view stop_to) const {
-        
-        return router_->BuildRoute(stop_ids_.at(std::string(stop_from)), stop_ids_.at(std::string(stop_to)));
+    const std::optional<graph::RouterInfoRef<double>> Router::FindRoute(const std::string_view stop_from, const std::string_view stop_to) const
+    {
+        graph::RouterInfoRef<double> router_info;
+        auto routing = router_->BuildRoute(stop_ids_.at(std::string(stop_from)), stop_ids_.at(std::string(stop_to)));
+
+        for (auto& edge_id : routing.value().edges) {
+            const graph::Edge<double> edge = GetGraph().GetEdge(edge_id);
+            router_info.edges.push_back(edge);
+        }
+        return router_info;
     }
 
     const graph::DirectedWeightedGraph<double>& Router::GetGraph() const {

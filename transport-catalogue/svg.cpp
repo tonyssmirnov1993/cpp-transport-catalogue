@@ -160,5 +160,4 @@ namespace svg {
         }
         output << "</svg>"sv;
     }
-
 } // namespace svg
