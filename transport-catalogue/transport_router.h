@@ -15,12 +15,10 @@ namespace transport_catalogue {
 			BuildGraph(catalogue);
 		}
 		
-		const std::optional<graph::RouterInfoRef<double>> FindRoute(const std::string_view stop_from, const std::string_view stop_to) const;
-
-	private :const graph::DirectedWeightedGraph<double>& GetGraph() const;
+	const std::optional<graph::RouterInfoRef<double>> FindRoute(const std::string_view stop_from, const std::string_view stop_to) const;
 
 	private:
-			
+		const graph::DirectedWeightedGraph<double>& GetGraph() const;	
 		const graph::DirectedWeightedGraph<double>& BuildGraph(const TransportCatalogue& catalogue);
 		graph::DirectedWeightedGraph<double> graph_;
 		std::map<std::string, graph::VertexId> stop_ids_;
